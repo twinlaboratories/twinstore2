@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@waitareyoutwins</title>
+
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- 3D Model Viewer -->
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
+
+    <style>
+        body {
+            /* Font updated to Helvetica Neue, with fallbacks */
+            font-family: 'Helvetica Neue', 'Inter', sans-serif;
+            overflow-x: hidden;
+            background-color: #000;
+        }
+
+        /* Styling for the video background */
+        #bg-video {
+            position: fixed;
+            right: 0;
+            bottom: 0;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            z-index: -100;
+            background-size: cover;
+            filter: brightness(0.4);
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        /* Page transition styles */
+        .page {
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+        }
+        .page-hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(20px);
+            position: absolute;
+        }
+
+        /* Custom Audio Player Styles */
+        #audio-player-container {
+            position: absolute;
+            top: 1.5rem; /* p-6 */
+            right: 1.5rem; /* p-6 */
+            cursor: pointer;
+            z-index: 50;
+        }
+        
+        #play-icon, #pause-icon {
+            /* Size doubled from 48px to 96px */
+            width: 96px; /* h-24 */
+            height: 96px; /* w-24 */
+            transition: opacity 0.2s ease-in-out;
+        }
+
+        .hidden-icon {
+            display: none;
+        }
+        
+        /* Image Scroller Styles */
+        .image-scroller {
+            overflow: hidden;
+            position: relative;
+        }
+        .image-container {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+        }
+        .image-container img {
+            width: 100%;
+            flex-shrink: 0;
+            object-fit: cover;
+        }
+        .scroller-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            padding: 0.75rem;
+            cursor: pointer;
+            z-index: 10;
+            /* Removed border-radius */
+        }
+        .scroller-btn.left { left: 1rem; }
+        .scroller-btn.right { right: 1rem; }
+    </style>
+</head>
+<body class="bg-black text-red-500">
+
+    <!-- Video Background -->
+    <video autoplay muted loop playsinline id="bg-video" onerror="this.style.display='none'; console.error('Video file not found or failed to load.')">
+        <!-- 
+            The video source is set to your file.
+        -->
+        <source src="short twins visualiser borough.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <!-- Header (Logo and Music Player) - Persists across pages -->
+    <header class="absolute top-0 left-0 p-6 z-50">
+        <img src="Untitled 3.PNG" alt="Logo" class="h-12" onerror="this.onerror=null;this.src='https://placehold.co/150x50/ff0000/000000?text=LOGO';">
+    </header>
+    <div id="audio-player-container" class="relative">
+        <audio id="music-track" loop>
+            <!-- Audio source updated to your .wav file -->
+            <source src="FAM DEMO2.wav" type="audio/wav">
+        </audio>
+        <!-- Music player image updated to 2.PNG -->
+        <img src="2.PNG" alt="Play" id="play-icon" onerror="this.onerror=null;this.src='https://placehold.co/48x48/ffffff/000000?text=PLAY';">
+        
+        <!-- Small play icon overlay - size and position doubled -->
+        <svg id="small-play-overlay" class="absolute h-10 w-10 text-white bottom-2 right-2 pointer-events-none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+        </svg>
+
+        <svg id="pause-icon" class="hidden-icon text-white" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25v13.5m-7.5-13.5v13.5" />
+        </svg>
+    </div>
+
+    <!-- Home Page -->
+    <div id="home-page" class="page min-h-screen flex flex-col items-center justify-center p-4">
+        <main id="model-container" class="w-full max-w-2xl h-[60vh] cursor-pointer">
+            <!-- 
+                FIXED: The 3D model source is now set to your .glb file.
+                The ios-src points to your .usdz file for AR on Apple devices.
+            -->
+            <model-viewer 
+                src="25_08_04_03_43_31_520.glb"
+                ios-src="25_08_04_16_43_18_283.usdz"
+                alt="A 3D model of a pendant"
+                auto-rotate
+                camera-controls
+                ar
+                ar-modes="webxr scene-viewer quick-look"
+                style="width: 100%; height: 100%; background-color: transparent;"
+                onclick="showProductPage()">
+            </model-viewer>
+        </main>
+    </div>
+
+    <!-- Product Page (Initially Hidden) -->
+    <div id="product-page" class="page page-hidden min-h-screen w-full flex items-center justify-center p-4">
+        <div class="w-full max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
+            <!-- Image Scroller (removed rounded-lg) -->
+            <div class="image-scroller aspect-square">
+                <div class="image-container">
+                    <!-- Product images updated -->
+                    <img src="IMG_9559.png" alt="Product Image 1">
+                    <img src="IMG_9544.png" alt="Product Image 2">
+                    <img src="IMG_9545.png" alt="Product Image 3">
+                    <img src="IMG_9546.png" alt="Product Image 4">
+                </div>
+                <button class="scroller-btn left" onclick="scrollImage(-1)">&#10094;</button>
+                <button class="scroller-btn right" onclick="scrollImage(1)">&#10095;</button>
+            </div>
+
+            <!-- Product Details -->
+            <div class="flex flex-col">
+                <button onclick="showHomePage()" class="hover:text-red-400 self-start mb-4 transition-colors">&larr; Back</button>
+                <h2 class="text-4xl font-bold mb-4">TURMERIC necklace</h2>
+                <ul class="mb-6 text-lg font-bold list-disc list-inside space-y-2">
+                    <li>limited edition</li>
+                    <li>solid stainless steel</li>
+                    <li>18 inch stainless steel necklace</li>
+                    <li>free entry to the TURMERIC parties</li>
+                </ul>
+                <div class="text-5xl font-bold mb-8 text-white">£25.99</div>
+                
+                <!-- Removed rounded-lg and updated link -->
+                <a href="https://buy.stripe.com/28E8wP3p6ePy5o442Z4Ja00" id="buy-now-link" class="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-4 px-4 text-center text-xl transition duration-300">
+                    Buy Now
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const homePage = document.getElementById('home-page');
+        const productPage = document.getElementById('product-page');
+        const bgVideo = document.getElementById('bg-video');
+        
+        const audioPlayerContainer = document.getElementById('audio-player-container');
+        const music = document.getElementById('music-track');
+        const playIcon = document.getElementById('play-icon');
+        const pauseIcon = document.getElementById('pause-icon');
+        const smallPlayOverlay = document.getElementById('small-play-overlay');
+
+        // --- Page Navigation ---
+        function showProductPage() {
+            homePage.classList.add('page-hidden');
+            productPage.classList.remove('page-hidden');
+            bgVideo.style.opacity = '0'; // Fade out video background
+        }
+
+        function showHomePage() {
+            productPage.classList.add('page-hidden');
+            homePage.classList.remove('page-hidden');
+            bgVideo.style.opacity = '1'; // Fade in video background
+        }
+
+        // --- Image Scroller Logic ---
+        const imageContainer = document.querySelector('.image-container');
+        const images = document.querySelectorAll('.image-container img');
+        let currentIndex = 0;
+
+        function scrollImage(direction) {
+            currentIndex += direction;
+            if (currentIndex < 0) {
+                currentIndex = images.length - 1;
+            } else if (currentIndex >= images.length) {
+                currentIndex = 0;
+            }
+            const offset = -currentIndex * 100;
+            imageContainer.style.transform = `translateX(${offset}%)`;
+        }
+
+        // --- Custom Audio Player Logic ---
+        async function togglePlay() {
+            if (music.paused) {
+                try {
+                    await music.play();
+                    playIcon.classList.add('hidden-icon');
+                    smallPlayOverlay.classList.add('hidden-icon');
+                    pauseIcon.classList.remove('hidden-icon');
+                } catch (error) {
+                    console.error("Play request was interrupted:", error);
+                }
+            } else {
+                music.pause();
+                playIcon.classList.remove('hidden-icon');
+                smallPlayOverlay.classList.remove('hidden-icon');
+                pauseIcon.classList.add('hidden-icon');
+            }
+        }
+
+        audioPlayerContainer.addEventListener('click', togglePlay);
+        
+        // --- Robust Video Autoplay ---
+        // This ensures the video tries to play when the page loads.
+        window.addEventListener('load', () => {
+            const video = document.getElementById('bg-video');
+            video.play().catch(error => {
+                console.error("Video autoplay was prevented by the browser:", error);
+                // As a fallback, you could hide the video or show an image
+                video.style.display = 'none';
+            });
+        });
+
+    </script>
+
+</body>
+</html>
